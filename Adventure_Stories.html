@@ -1,0 +1,2077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adventure Stories</title>
+    <style>
+        :root {
+            --primary-color: #6a11cb;
+            --secondary-color: #2575fc;
+            --text-color: #f0f0f0;
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --good-color: #4caf50;
+            --bad-color: #f44336;
+            --search-color: #2196f3;
+            --risky-color: #ff9800;
+            --silly-color: #e91e63;
+            --btn-hover: #9333ea;
+            --border-radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            text-align: center;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 15px rgba(106, 17, 203, 0.3);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-top: 1rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            width: 100%;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 0.8rem 1.5rem;
+            margin: 0.5rem;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, var(--btn-hover), var(--secondary-color));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 1rem 0;
+        }
+
+        input, select {
+            background-color: #333;
+            color: var(--text-color);
+            border: 1px solid #555;
+            border-radius: var(--border-radius);
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            width: 100%;
+            font-size: 1rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #storyText {
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            white-space: pre-wrap;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .choice-btn {
+            margin: 0.5rem 0;
+            width: 100%;
+            text-align: left;
+            padding: 1rem;
+            font-size: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #playerStats {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            margin-right: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-icon {
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        #quickActions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin: 1rem 0;
+        }
+
+        .quick-btn {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .popup {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .popup.damage {
+            background-color: var(--bad-color);
+        }
+
+        .popup.healing {
+            background-color: var(--good-color);
+        }
+
+        .popup.coins {
+            background-color: var(--risky-color);
+        }
+
+        .popup.item {
+            background-color: var(--search-color);
+        }
+
+        .popup.skill {
+            background-color: var(--silly-color);
+        }
+
+        #loading {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 999;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--secondary-color);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #inventory, #shop, #specialMoves {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .item-card {
+            background-color: #2a2a2a;
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .move-cooldown {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+
+        .about-content {
+            line-height: 1.8;
+        }
+
+        .about-content p {
+            margin-bottom: 1rem;
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 1rem;
+            }
+
+            .button-container {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+                margin: 0.3rem 0;
+            }
+
+            #quickActions .quick-btn {
+                flex: 1 0 45%;
+                margin: 0.3rem;
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Menu animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .menu-anim {
+            animation: fadeIn 0.5s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Main Menu -->
+        <div id="mainMenu" class="menu-anim">
+            <h1>Adventure Stories</h1>
+            <div class="card">
+                <div class="button-container">
+                    <button id="newGameBtn">New Adventure</button>
+                    <button id="loadGameBtn">Load Game</button>
+                    <button id="loadApiKeyBtn">Load API Key</button>
+                    <button id="aboutBtn">About</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Key Screen -->
+        <div id="apiKeyScreen" class="hidden menu-anim">
+            <h1>Adventure Stories</h1>
+            <div class="card">
+                <h2>API Key Setup</h2>
+                <p>Enter an OpenRouter API key below. Free API keys can be found at <a href="https://openrouter.ai" target="_blank" style="color: var(--secondary-color);">openrouter.ai</a></p>
+                <input type="text" id="apiKeyInput" placeholder="Enter your API key">
+                <div class="button-container">
+                    <button id="saveApiKeyBtn">Save API Key</button>
+                    <button id="apiKeyBackBtn">Back</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player Count Selection -->
+        <div id="playerCountScreen" class="hidden menu-anim">
+            <h1>Adventure Stories</h1>
+            <div class="card">
+                <h2>How many players?</h2>
+                <div class="button-container">
+                    <button class="playerCountBtn" data-count="1">1 Player</button>
+                    <button class="playerCountBtn" data-count="2">2 Players</button>
+                    <button class="playerCountBtn" data-count="3">3 Players</button>
+                    <button class="playerCountBtn" data-count="4">4 Players</button>
+                    <button class="playerCountBtn" data-count="5">5 Players</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Adventure Type Selection -->
+        <div id="adventureTypeScreen" class="hidden menu-anim">
+            <h1>Adventure Stories</h1>
+            <div class="card">
+                <h2>Choose Your Adventure</h2>
+                <select id="adventureTypeSelect">
+                    <option value="space">Space Exploration</option>
+                    <option value="fantasy">Fantasy Kingdom</option>
+                    <option value="underwater">Underwater World</option>
+                    <option value="jungle">Jungle Expedition</option>
+                    <option value="future">Utopian Future</option>
+                    <option value="dinosaur">Dinosaur Times</option>
+                    <option value="arctic">Arctic Adventure</option>
+                    <option value="steampunk">Steampunk City</option>
+                    <option value="haunted">Haunted Mansion</option>
+                    <option value="pirate">Pirate Seas</option>
+                    <option value="custom">Custom Game</option>
+                </select>
+                <div id="customThemeContainer" class="hidden">
+                    <input type="text" id="customThemeInput" placeholder="Enter your custom theme">
+                </div>
+                <div class="button-container">
+                    <button id="adventureTypeNextBtn">Next</button>
+                    <button id="adventureTypeBackBtn">Back</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Age Input Screen -->
+        <div id="ageInputScreen" class="hidden menu-anim">
+            <h1>Adventure Stories</h1>
+            <div class="card">
+                <h2>Player Ages</h2>
+                <div id="ageInputs"></div>
+                <div class="button-container">
+                    <button id="ageInputNextBtn">Next</button>
+                    <button id="ageInputBackBtn">Back</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player Names Screen -->
+        <div id="nameInputScreen" class="hidden menu-anim">
+            <h1>Adventure Stories</h1>
+            <div class="card">
+                <h2>Player Names</h2>
+                <div id="nameInputs"></div>
+                <div class="button-container">
+                    <button id="nameInputNextBtn">Start Adventure</button>
+                    <button id="nameInputBackBtn">Back</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen" class="hidden menu-anim">
+            <h1>Adventure Stories</h1>
+            
+            <!-- Player Stats -->
+            <div id="playerStatsContainer" class="card">
+                <h3 id="currentPlayerName">Player's Turn</h3>
+                <div id="playerStats">
+                    <div class="stat">
+                        <span class="stat-icon">❤️</span>
+                        <span id="playerHp">100</span> HP
+                    </div>
+                    <div class="stat">
+                        <span class="stat-icon">💰</span>
+                        <span id="playerCoins">50</span> Coins
+                    </div>
+                    <div class="stat">
+                        <span class="stat-icon">🎯</span>
+                        Goal: <span id="playerGoal">Unknown</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-icon">🔄</span>
+                        Turn: <span id="turnCounter">1</span>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div id="quickActions">
+                    <button class="quick-btn" id="healBtn">🧪 Heal</button>
+                    <button class="quick-btn" id="specialBtn">✨ Special</button>
+                    <button class="quick-btn" id="inventoryBtn">🎒 Inventory</button>
+                    <button class="quick-btn" id="shopBtn">🛒 Shop</button>
+                    <button class="quick-btn" id="menuBtn">📜 Menu</button>
+                </div>
+            </div>
+            
+            <!-- Story Card -->
+            <div class="card">
+                <div id="storyText"></div>
+                
+                <!-- Player Choices -->
+                <div id="choicesContainer"></div>
+                
+                <!-- Custom Action (unlocked after completing objective) -->
+                <div id="customActionContainer" class="hidden">
+                    <input type="text" id="customActionInput" placeholder="Enter your custom action...">
+                    <button id="customActionBtn">Submit Action</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu Screen -->
+        <div id="menuScreen" class="hidden menu-anim">
+            <h1>Menu</h1>
+            <div class="card">
+                <div class="button-container">
+                    <button id="resumeBtn">Resume Game</button>
+                    <button id="menuInventoryBtn">Inventory</button>
+                    <button id="menuShopBtn">Shop</button>
+                    <button id="menuSpecialBtn">Special Moves</button>
+                    <button id="saveExitBtn">Save & Exit</button>
+                    <button id="newAdventureBtn">New Adventure</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Screen -->
+        <div id="inventoryScreen" class="hidden menu-anim">
+            <h1>Inventory</h1>
+            <div class="card">
+                <div id="inventory"></div>
+                <div class="button-container">
+                    <button id="inventoryBackBtn">Back</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shop Screen -->
+        <div id="shopScreen" class="hidden menu-anim">
+            <h1>Shop</h1>
+            <div class="card">
+                <div class="stat">
+                    <span class="stat-icon">💰</span>
+                    <span id="shopCoins">0</span> Coins
+                </div>
+                <div id="shop"></div>
+                <div class="button-container">
+                    <button id="shopBackBtn">Back</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Special Moves Screen -->
+        <div id="specialMovesScreen" class="hidden menu-anim">
+            <h1>Special Moves</h1>
+            <div class="card">
+                <div id="specialMoves"></div>
+                <div class="button-container">
+                    <button id="specialBackBtn">Back</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Load Game Screen -->
+        <div id="loadGameScreen" class="hidden menu-anim">
+            <h1>Load Game</h1>
+            <div class="card">
+                <div id="savedGames"></div>
+                <div class="button-container">
+                    <button id="loadGameBackBtn">Back</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- About Screen -->
+        <div id="aboutScreen" class="hidden menu-anim">
+            <h1>About Adventure Stories</h1>
+            <div class="card about-content">
+                <p>Adventure Stories is an AI-powered, story-driven adventure game designed for kids and teens aged 6-16. It provides players with a fun and interactive way to engage with reading and storytelling.</p>
+                
+                <p>Players create characters and embark on adventures where their choices directly influence the narrative. The story adapts to player choices, creating a unique experience each time.</p>
+                
+                <p>This game was made for Brookston, Vincent, Toby, and Katie from their dad, with love.</p>
+                
+                <div class="button-container">
+                    <button id="aboutBackBtn">Back to Menu</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popup Messages -->
+        <div id="popupMessage" class="popup"></div>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="hidden">
+            <div class="spinner"></div>
+            <p>Generating your adventure...</p>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        const gameState = {
+            playerCount: 1,
+            players: [],
+            currentPlayerIndex: 0,
+            adventureType: '',
+            customTheme: '',
+            turn: 1,
+            goal: '',
+            goalCompleted: false,
+            messageHistory: [],
+            choiceTypes: ['good', 'bad', 'search', 'risky', 'silly'],
+            apiKey: '',  // Removed hardcoded API key
+            isLoading: false,
+            currentScreen: 'mainMenu',
+            allowCustomActions: false
+        };
+
+        // Adventure Types - Special Moves and Shop Items
+        const adventureData = {
+            space: {
+                name: "Space Exploration",
+                goal: "Find the rare space crystal and return to your ship",
+                specialMoves: [
+                    { name: "Gravity Flip", effect: "Reverse gravity to reach high areas", cooldown: 3 },
+                    { name: "Oxygen Boost", effect: "Temporarily breathe in any environment", cooldown: 4 },
+                    { name: "Laser Blast", effect: "Powerful attack against space creatures", cooldown: 2 }
+                ],
+                shopItems: [
+                    { name: "Space Ration", effect: "Restore 20 HP", cost: 15, type: "healing" },
+                    { name: "Jetpack", effect: "Fly for short distances", cost: 50, type: "equipment" },
+                    { name: "Plasma Shield", effect: "Block next damage", cost: 40, type: "defense" }
+                ]
+            },
+            fantasy: {
+                name: "Fantasy Kingdom",
+                goal: "Defeat the evil sorcerer and save the kingdom",
+                specialMoves: [
+                    { name: "Magic Blast", effect: "Powerful magical attack", cooldown: 2 },
+                    { name: "Enchant Weapon", effect: "Increase weapon power for 3 turns", cooldown: 5 },
+                    { name: "Healing Prayer", effect: "Heal all party members", cooldown: 4 }
+                ],
+                shopItems: [
+                    { name: "Health Potion", effect: "Restore 25 HP", cost: 20, type: "healing" },
+                    { name: "Magic Wand", effect: "Channel magic more effectively", cost: 45, type: "equipment" },
+                    { name: "Knight's Shield", effect: "Block physical attacks", cost: 35, type: "defense" }
+                ]
+            },
+            underwater: {
+                name: "Underwater World",
+                goal: "Find the lost city of Atlantis",
+                specialMoves: [
+                    { name: "Bubble Shield", effect: "Protect from water pressure", cooldown: 3 },
+                    { name: "Sonic Wave", effect: "Stun underwater creatures", cooldown: 2 },
+                    { name: "Sea Friend", effect: "Call a sea creature to help", cooldown: 4 }
+                ],
+                shopItems: [
+                    { name: "Seaweed Wrap", effect: "Restore 20 HP", cost: 15, type: "healing" },
+                    { name: "Trident", effect: "Attack underwater enemies", cost: 40, type: "equipment" },
+                    { name: "Coral Armor", effect: "Reduce damage underwater", cost: 35, type: "defense" }
+                ]
+            },
+            jungle: {
+                name: "Jungle Expedition",
+                goal: "Discover the lost temple and find the ancient artifact",
+                specialMoves: [
+                    { name: "Vine Swing", effect: "Quickly traverse gaps", cooldown: 2 },
+                    { name: "Animal Call", effect: "Summon jungle animals to help", cooldown: 4 },
+                    { name: "Camouflage", effect: "Hide from predators", cooldown: 3 }
+                ],
+                shopItems: [
+                    { name: "Fruit Salad", effect: "Restore 15 HP", cost: 10, type: "healing" },
+                    { name: "Machete", effect: "Cut through dense vegetation", cost: 30, type: "equipment" },
+                    { name: "Snake Antivenom", effect: "Cure poison", cost: 25, type: "healing" }
+                ]
+            },
+            future: {
+                name: "Utopian Future",
+                goal: "Uncover the secret behind the perfect society",
+                specialMoves: [
+                    { name: "Mind Link", effect: "Read thoughts of nearby people", cooldown: 4 },
+                    { name: "Time Skip", effect: "Skip ahead a few seconds", cooldown: 5 },
+                    { name: "Tech Hack", effect: "Control nearby technology", cooldown: 3 }
+                ],
+                shopItems: [
+                    { name: "Nano Repair", effect: "Restore 30 HP", cost: 25, type: "healing" },
+                    { name: "Hover Boots", effect: "Float above ground", cost: 50, type: "equipment" },
+                    { name: "Neural Enhancer", effect: "Improve decision making", cost: 45, type: "equipment" }
+                ]
+            },
+            dinosaur: {
+                name: "Dinosaur Times",
+                goal: "Survive the dinosaur era and find a way back to your time",
+                specialMoves: [
+                    { name: "Dino Friend", effect: "Befriend a helpful dinosaur", cooldown: 4 },
+                    { name: "Stone Tool", effect: "Craft tools for survival", cooldown: 3 },
+                    { name: "Apex Roar", effect: "Scare away smaller predators", cooldown: 2 }
+                ],
+                shopItems: [
+                    { name: "Prehistoric Berries", effect: "Restore 20 HP", cost: 15, type: "healing" },
+                    { name: "Bone Spear", effect: "Primitive but effective weapon", cost: 35, type: "equipment" },
+                    { name: "Hide Armor", effect: "Basic protection", cost: 30, type: "defense" }
+                ]
+            },
+            arctic: {
+                name: "Arctic Adventure",
+                goal: "Reach the North Pole and discover the ancient ice temple",
+                specialMoves: [
+                    { name: "Ice Shield", effect: "Protect against cold damage", cooldown: 3 },
+                    { name: "Snowball Attack", effect: "Distract enemies", cooldown: 2 },
+                    { name: "Thermal Body", effect: "Survive extreme cold", cooldown: 4 }
+                ],
+                shopItems: [
+                    { name: "Hot Chocolate", effect: "Restore 25 HP", cost: 20, type: "healing" },
+                    { name: "Ice Axe", effect: "Climb ice walls", cost: 40, type: "equipment" },
+                    { name: "Thermal Jacket", effect: "Resist cold effects", cost: 35, type: "defense" }
+                ]
+            },
+            steampunk: {
+                name: "Steampunk City",
+                goal: "Stop the mad inventor from taking over the city with his mechanical army",
+                specialMoves: [
+                    { name: "Gear Jam", effect: "Disable mechanical enemies", cooldown: 3 },
+                    { name: "Steam Burst", effect: "Create a cloud of steam for escape", cooldown: 2 },
+                    { name: "Clockwork Friend", effect: "Summon a mechanical ally", cooldown: 4 }
+                ],
+                shopItems: [
+                    { name: "Tincture", effect: "Restore 20 HP", cost: 15, type: "healing" },
+                    { name: "Brass Knuckles", effect: "Mechanical hand weapon", cost: 35, type: "equipment" },
+                    { name: "Gear Shield", effect: "Block mechanical attacks", cost: 30, type: "defense" }
+                ]
+            },
+            haunted: {
+                name: "Haunted Mansion",
+                goal: "Uncover the mansion's secret and escape before midnight",
+                specialMoves: [
+                    { name: "Spirit Sight", effect: "See hidden ghosts and clues", cooldown: 3 },
+                    { name: "Holy Light", effect: "Repel malevolent spirits", cooldown: 4 },
+                    { name: "Phantom Step", effect: "Pass through walls briefly", cooldown: 5 }
+                ],
+                shopItems: [
+                    { name: "Spiritual Essence", effect: "Restore 25 HP", cost: 20, type: "healing" },
+                    { name: "Ghost Lantern", effect: "Illuminate dark areas", cost: 30, type: "equipment" },
+                    { name: "Protective Amulet", effect: "Ward against curses", cost: 40, type: "defense" }
+                ]
+            },
+            pirate: {
+                name: "Pirate Seas",
+                goal: "Find the legendary treasure of Captain Blackbeard",
+                specialMoves: [
+                    { name: "Parley", effect: "Talk your way out of a fight", cooldown: 4 },
+                    { name: "Cannon Blast", effect: "Powerful ship attack", cooldown: 3 },
+                    { name: "Sea Legs", effect: "Perfect balance during storms", cooldown: 2 }
+                ],
+                shopItems: [
+                    { name: "Rum", effect: "Restore 20 HP but lose 5 HP next turn", cost: 10, type: "healing" },
+                    { name: "Cutlass", effect: "Classic pirate sword", cost: 35, type: "equipment" },
+                    { name: "Compass", effect: "Always find your way", cost: 25, type: "equipment" }
+                ]
+            },
+            custom: {
+                name: "Custom Game",
+                goal: "Complete your custom adventure",
+                specialMoves: [
+                    { name: "Special Ability 1", effect: "Use your first special ability", cooldown: 3 },
+                    { name: "Special Ability 2", effect: "Use your second special ability", cooldown: 4 },
+                    { name: "Special Ability 3", effect: "Use your third special ability", cooldown: 2 }
+                ],
+                shopItems: [
+                    { name: "Health Item", effect: "Restore 25 HP", cost: 20, type: "healing" },
+                    { name: "Useful Tool", effect: "Help solve puzzles", cost: 30, type: "equipment" },
+                    { name: "Protective Gear", effect: "Reduce damage taken", cost: 35, type: "defense" }
+                ]
+            }
+        };
+
+        // DOM Elements
+        const elements = {
+            // Screens
+            mainMenu: document.getElementById('mainMenu'),
+            playerCountScreen: document.getElementById('playerCountScreen'),
+            adventureTypeScreen: document.getElementById('adventureTypeScreen'),
+            ageInputScreen: document.getElementById('ageInputScreen'),
+            nameInputScreen: document.getElementById('nameInputScreen'),
+            gameScreen: document.getElementById('gameScreen'),
+            menuScreen: document.getElementById('menuScreen'),
+            inventoryScreen: document.getElementById('inventoryScreen'),
+            shopScreen: document.getElementById('shopScreen'),
+            specialMovesScreen: document.getElementById('specialMovesScreen'),
+            loadGameScreen: document.getElementById('loadGameScreen'),
+            aboutScreen: document.getElementById('aboutScreen'),
+            apiKeyScreen: document.getElementById('apiKeyScreen'),
+            
+            // Buttons
+            newGameBtn: document.getElementById('newGameBtn'),
+            loadGameBtn: document.getElementById('loadGameBtn'),
+            loadApiKeyBtn: document.getElementById('loadApiKeyBtn'),
+            aboutBtn: document.getElementById('aboutBtn'),
+            playerCountBtns: document.querySelectorAll('.playerCountBtn'),
+            adventureTypeNextBtn: document.getElementById('adventureTypeNextBtn'),
+            adventureTypeBackBtn: document.getElementById('adventureTypeBackBtn'),
+            ageInputNextBtn: document.getElementById('ageInputNextBtn'),
+            ageInputBackBtn: document.getElementById('ageInputBackBtn'),
+            nameInputNextBtn: document.getElementById('nameInputNextBtn'),
+            nameInputBackBtn: document.getElementById('nameInputBackBtn'),
+            healBtn: document.getElementById('healBtn'),
+            specialBtn: document.getElementById('specialBtn'),
+            inventoryBtn: document.getElementById('inventoryBtn'),
+            shopBtn: document.getElementById('shopBtn'),
+            menuBtn: document.getElementById('menuBtn'),
+            resumeBtn: document.getElementById('resumeBtn'),
+            menuInventoryBtn: document.getElementById('menuInventoryBtn'),
+            menuShopBtn: document.getElementById('menuShopBtn'),
+            menuSpecialBtn: document.getElementById('menuSpecialBtn'),
+            saveExitBtn: document.getElementById('saveExitBtn'),
+            newAdventureBtn: document.getElementById('newAdventureBtn'),
+            inventoryBackBtn: document.getElementById('inventoryBackBtn'),
+            shopBackBtn: document.getElementById('shopBackBtn'),
+            specialBackBtn: document.getElementById('specialBackBtn'),
+            loadGameBackBtn: document.getElementById('loadGameBackBtn'),
+            aboutBackBtn: document.getElementById('aboutBackBtn'),
+            customActionBtn: document.getElementById('customActionBtn'),
+            saveApiKeyBtn: document.getElementById('saveApiKeyBtn'),
+            apiKeyBackBtn: document.getElementById('apiKeyBackBtn'),
+            
+            // Inputs and Containers
+            adventureTypeSelect: document.getElementById('adventureTypeSelect'),
+            customThemeContainer: document.getElementById('customThemeContainer'),
+            customThemeInput: document.getElementById('customThemeInput'),
+            ageInputs: document.getElementById('ageInputs'),
+            nameInputs: document.getElementById('nameInputs'),
+            storyText: document.getElementById('storyText'),
+            choicesContainer: document.getElementById('choicesContainer'),
+            currentPlayerName: document.getElementById('currentPlayerName'),
+            playerHp: document.getElementById('playerHp'),
+            playerCoins: document.getElementById('playerCoins'),
+            playerGoal: document.getElementById('playerGoal'),
+            turnCounter: document.getElementById('turnCounter'),
+            inventory: document.getElementById('inventory'),
+            shop: document.getElementById('shop'),
+            specialMoves: document.getElementById('specialMoves'),
+            savedGames: document.getElementById('savedGames'),
+            popupMessage: document.getElementById('popupMessage'),
+            loading: document.getElementById('loading'),
+            shopCoins: document.getElementById('shopCoins'),
+            customActionContainer: document.getElementById('customActionContainer'),
+            customActionInput: document.getElementById('customActionInput'),
+            apiKeyInput: document.getElementById('apiKeyInput')
+        };
+
+        // Initialize Game
+        function initGame() {
+            // Load saved API key
+            loadApiKey();
+            
+            // Add event listeners
+            elements.newGameBtn.addEventListener('click', () => showScreen('playerCountScreen'));
+            elements.loadGameBtn.addEventListener('click', loadGameList);
+            elements.aboutBtn.addEventListener('click', () => showScreen('aboutScreen'));
+            elements.loadApiKeyBtn.addEventListener('click', () => showScreen('apiKeyScreen'));
+            
+            elements.playerCountBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    gameState.playerCount = parseInt(btn.dataset.count);
+                    showScreen('adventureTypeScreen');
+                });
+            });
+            
+            elements.adventureTypeSelect.addEventListener('change', () => {
+                if (elements.adventureTypeSelect.value === 'custom') {
+                    elements.customThemeContainer.classList.remove('hidden');
+                } else {
+                    elements.customThemeContainer.classList.add('hidden');
+                }
+            });
+            
+            elements.adventureTypeNextBtn.addEventListener('click', () => {
+                gameState.adventureType = elements.adventureTypeSelect.value;
+                if (gameState.adventureType === 'custom') {
+                    gameState.customTheme = elements.customThemeInput.value;
+                }
+                setupAgeInputs();
+                showScreen('ageInputScreen');
+            });
+            
+            elements.adventureTypeBackBtn.addEventListener('click', () => showScreen('playerCountScreen'));
+            
+            elements.ageInputNextBtn.addEventListener('click', () => {
+                // Save ages
+                for (let i = 0; i < gameState.playerCount; i++) {
+                    gameState.players[i] = gameState.players[i] || {};
+                    gameState.players[i].age = parseInt(document.getElementById(`ageInput${i}`).value);
+                }
+                setupNameInputs();
+                showScreen('nameInputScreen');
+            });
+            
+            elements.ageInputBackBtn.addEventListener('click', () => showScreen('adventureTypeScreen'));
+            
+            elements.nameInputNextBtn.addEventListener('click', () => {
+                // Save names and initialize player stats
+                for (let i = 0; i < gameState.playerCount; i++) {
+                    gameState.players[i] = gameState.players[i] || {};
+                    gameState.players[i].name = document.getElementById(`nameInput${i}`).value;
+                    gameState.players[i].hp = 100;
+                    gameState.players[i].coins = 50;
+                    gameState.players[i].inventory = [];
+                    gameState.players[i].specialMoves = [];
+                    gameState.players[i].passedOutTurns = 0;
+                    gameState.players[i].passedOut = false;
+                    
+                    // Add adventure-specific special moves
+                    if (gameState.adventureType !== 'custom') {
+                        gameState.players[i].specialMoves = adventureData[gameState.adventureType].specialMoves.map(move => ({
+                            ...move,
+                            currentCooldown: 0
+                        }));
+                    } else {
+                        gameState.players[i].specialMoves = adventureData.custom.specialMoves.map(move => ({
+                            ...move,
+                            currentCooldown: 0
+                        }));
+                    }
+                }
+                
+                // Set goal
+                if (gameState.adventureType !== 'custom') {
+                    gameState.goal = adventureData[gameState.adventureType].goal;
+                } else {
+                    gameState.goal = `Explore the ${gameState.customTheme} world and complete your adventure`;
+                }
+                
+                // Start the game
+                startGame();
+            });
+            
+            elements.nameInputBackBtn.addEventListener('click', () => showScreen('ageInputScreen'));
+            
+            // Quick action buttons
+            elements.healBtn.addEventListener('click', handleHeal);
+            elements.specialBtn.addEventListener('click', () => showScreen('specialMovesScreen'));
+            elements.inventoryBtn.addEventListener('click', () => {
+                updateInventoryScreen();
+                showScreen('inventoryScreen');
+            });
+            elements.shopBtn.addEventListener('click', () => {
+                updateShopScreen();
+                showScreen('shopScreen');
+            });
+            elements.menuBtn.addEventListener('click', () => showScreen('menuScreen'));
+            
+            // Menu buttons
+            elements.resumeBtn.addEventListener('click', () => showScreen('gameScreen'));
+            elements.menuInventoryBtn.addEventListener('click', () => {
+                updateInventoryScreen();
+                showScreen('inventoryScreen');
+            });
+            elements.menuShopBtn.addEventListener('click', () => {
+                updateShopScreen();
+                showScreen('shopScreen');
+            });
+            elements.menuSpecialBtn.addEventListener('click', () => showScreen('specialMovesScreen'));
+            elements.saveExitBtn.addEventListener('click', saveAndExit);
+            elements.newAdventureBtn.addEventListener('click', confirmNewAdventure);
+            
+            // Back buttons
+            elements.inventoryBackBtn.addEventListener('click', () => {
+                if (gameState.currentScreen === 'menuScreen') {
+                    showScreen('menuScreen');
+                } else {
+                    showScreen('gameScreen');
+                }
+            });
+            
+            elements.shopBackBtn.addEventListener('click', () => {
+                if (gameState.currentScreen === 'menuScreen') {
+                    showScreen('menuScreen');
+                } else {
+                    showScreen('gameScreen');
+                }
+            });
+            
+            elements.specialBackBtn.addEventListener('click', () => {
+                if (gameState.currentScreen === 'menuScreen') {
+                    showScreen('menuScreen');
+                } else {
+                    showScreen('gameScreen');
+                }
+            });
+            
+            elements.loadGameBackBtn.addEventListener('click', () => showScreen('mainMenu'));
+            elements.aboutBackBtn.addEventListener('click', () => showScreen('mainMenu'));
+            
+            // API Key screen buttons
+            elements.saveApiKeyBtn.addEventListener('click', saveApiKey);
+            elements.apiKeyBackBtn.addEventListener('click', () => showScreen('mainMenu'));
+            
+            // Custom action button
+            elements.customActionBtn.addEventListener('click', handleCustomAction);
+        }
+
+        // Load API Key
+        function loadApiKey() {
+            const savedApiKey = localStorage.getItem('adventureStories_apiKey');
+            if (savedApiKey) {
+                gameState.apiKey = savedApiKey;
+                elements.apiKeyInput.value = savedApiKey;
+            }
+        }
+
+        // Save API Key
+        function saveApiKey() {
+            const apiKey = elements.apiKeyInput.value.trim();
+            
+            if (apiKey === '') {
+                showPopup('Please enter an API key', 'damage');
+                return;
+            }
+            
+            gameState.apiKey = apiKey;
+            localStorage.setItem('adventureStories_apiKey', apiKey);
+            showPopup('API key saved', 'healing');
+            showScreen('mainMenu');
+        }
+
+        // Show Screen
+        function showScreen(screenId) {
+            // Hide all screens
+            elements.mainMenu.classList.add('hidden');
+            elements.playerCountScreen.classList.add('hidden');
+            elements.adventureTypeScreen.classList.add('hidden');
+            elements.ageInputScreen.classList.add('hidden');
+            elements.nameInputScreen.classList.add('hidden');
+            elements.gameScreen.classList.add('hidden');
+            elements.menuScreen.classList.add('hidden');
+            elements.inventoryScreen.classList.add('hidden');
+            elements.shopScreen.classList.add('hidden');
+            elements.specialMovesScreen.classList.add('hidden');
+            elements.loadGameScreen.classList.add('hidden');
+            elements.aboutScreen.classList.add('hidden');
+            elements.apiKeyScreen.classList.add('hidden');
+            
+            // Show selected screen
+            elements[screenId].classList.remove('hidden');
+            gameState.currentScreen = screenId;
+            
+            // Apply animation
+            elements[screenId].classList.remove('menu-anim');
+            void elements[screenId].offsetWidth; // Trigger reflow
+            elements[screenId].classList.add('menu-anim');
+        }
+
+        // Setup Age Inputs
+        function setupAgeInputs() {
+            elements.ageInputs.innerHTML = '';
+            
+            for (let i = 0; i < gameState.playerCount; i++) {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <label for="ageInput${i}">Player ${i + 1} Age:</label>
+                    <input type="number" id="ageInput${i}" min="6" max="16" value="10">
+                `;
+                elements.ageInputs.appendChild(div);
+            }
+        }
+
+        // Setup Name Inputs
+        function setupNameInputs() {
+            elements.nameInputs.innerHTML = '';
+            
+            for (let i = 0; i < gameState.playerCount; i++) {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <label for="nameInput${i}">Player ${i + 1} Name:</label>
+                    <input type="text" id="nameInput${i}" placeholder="Enter your name" value="Player ${i + 1}">
+                `;
+                elements.nameInputs.appendChild(div);
+            }
+        }
+
+        // Start Game
+        function startGame() {
+            // Check if API key is set
+            if (!gameState.apiKey) {
+                showPopup('Please set an API key first', 'damage');
+                showScreen('apiKeyScreen');
+                return;
+            }
+            
+            // Reset game state
+            gameState.currentPlayerIndex = 0;
+            gameState.turn = 1;
+            gameState.goalCompleted = false;
+            gameState.messageHistory = [];
+            gameState.allowCustomActions = false;
+            
+            // Update UI
+            updatePlayerStats();
+            elements.playerGoal.textContent = gameState.goal;
+            elements.turnCounter.textContent = gameState.turn;
+            
+            // Generate initial story
+            generateStory('start');
+            
+            // Show game screen
+            showScreen('gameScreen');
+        }
+
+        // Generate Story
+        async function generateStory(action) {
+            try {
+                // Check if API key is set
+                if (!gameState.apiKey) {
+                    elements.storyText.textContent = "Please set an API key to continue.";
+                    elements.choicesContainer.innerHTML = `
+                        <button class="choice-btn" onclick="showScreen('apiKeyScreen')">
+                            Set API Key
+                        </button>
+                    `;
+                    return;
+                }
+                
+                showLoading(true);
+                
+                // Current player
+                const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+                
+                // Calculate average age for reading level
+                const avgAge = gameState.players.reduce((sum, player) => sum + player.age, 0) / gameState.players.length;
+                
+                // Create system message
+                let systemMessage = {
+                    role: "system",
+                    content: `You are running an interactive Adventure Stories game designed for children. This game is for ${gameState.playerCount} player(s) with an average age of ${avgAge.toFixed(1)}. The current player is ${currentPlayer.name}. 
+                    
+                    Adventure Type: ${gameState.adventureType === 'custom' ? gameState.customTheme : adventureData[gameState.adventureType].name}
+                    
+                    Goal: ${gameState.goal}
+                    
+                    Game Information:
+                    - Current Turn: ${gameState.turn}
+                    - Current Player: ${currentPlayer.name} (HP: ${currentPlayer.hp}, Coins: ${currentPlayer.coins})
+                    - Player is ${currentPlayer.passedOut ? 'passed out' : 'active'}
+                    
+                    Gameplay Rules:
+                    - Provide engaging, age-appropriate content for a ${avgAge.toFixed(1)} year old reading level.
+                    - Always include the goal in your story progression.
+                    - If the player makes progress toward the goal, acknowledge it.
+                    - If the player completes the goal, make it clear and exciting!
+                    - For item usage, describe the effect clearly.
+                    - Maintain continuity with previous story elements.
+                    - Each choice has a clear, distinct consequence that moves the story forward.
+                    
+                    Response Format:
+                    1. A compelling story paragraph (3-5 sentences) based on the action taken
+                    2. Exactly 5 possible action choices for the player
+                    3. If needed, include HP changes, coin rewards, or item acquisitions in [brackets]
+                    
+                    Example bracket notation:
+                    [HP-15] for health loss
+                    [HP+20] for healing
+                    [Coins+10] for gaining coins
+                    [Item:Health Potion] for gaining an item
+                    
+                    Create interesting, varied choices with different consequences:`
+                };
+                
+                // Build message history
+                const messages = [systemMessage, ...gameState.messageHistory];
+                
+                // Add the current action
+                if (action !== 'start') {
+                    messages.push({
+                        role: "user",
+                        content: action
+                    });
+                } else {
+                    // Initial story setup
+                    messages.push({
+                        role: "user",
+                        content: `Begin our adventure in the ${gameState.adventureType === 'custom' ? gameState.customTheme : adventureData[gameState.adventureType].name} setting. Introduce the goal to ${gameState.goal}, and set up an exciting scenario for ${currentPlayer.name} to start their journey. Provide 5 initial choices.`
+                    });
+                }
+                
+                // Make API call to OpenRouter
+                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${gameState.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'google/gemini-2.0-pro-exp-02-05:free',
+                        messages: messages,
+                        max_tokens: 7900,
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API request failed: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const content = data.choices[0].message.content;
+                
+                // Add AI response to message history
+                gameState.messageHistory.push({
+                    role: "assistant",
+                    content: content
+                });
+                
+                // Process the AI response
+                processAIResponse(content);
+                
+                // Check for goal completion
+                checkGoalCompletion(content);
+                
+            } catch (error) {
+                console.error('Error generating story:', error);
+                elements.storyText.textContent = "There was an error generating the story. Please check your API key and try again.";
+                
+                // Add retry button
+                elements.choicesContainer.innerHTML = `
+                    <button class="choice-btn" onclick="generateStory('${action}')">
+                        Retry
+                    </button>
+                    <button class="choice-btn" onclick="showScreen('apiKeyScreen')">
+                        Check API Key
+                    </button>
+                `;
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Process AI Response
+        function processAIResponse(content) {
+            // Extract story part (everything before the first numbered option)
+            const storyMatch = content.match(/^([\s\S]*?)(?:\n\s*1\.|\n\s*\d\)|\n\s*\[Choice|\n\s*Option)/i);
+            let storyPart = storyMatch ? storyMatch[1].trim() : content;
+            
+            // Extract choices
+            const choicePattern = /(?:\n\s*(\d+)[\.|\)]\s*(.*?)(?=\n\s*\d+[\.|\)]|\n\s*\[|\n\s*Option|\n*$))/gs;
+            const choices = [];
+            let match;
+            
+            while ((match = choicePattern.exec(content)) !== null) {
+                choices.push(match[2].trim());
+            }
+            
+            // If no choices were found with the pattern, try to extract any list
+            if (choices.length === 0) {
+                const lines = content.split('\n');
+                for (const line of lines) {
+                    const simpleMatch = line.match(/^\s*(\d+)[\.|\)]\s*(.*)/);
+                    if (simpleMatch) {
+                        choices.push(simpleMatch[2].trim());
+                    }
+                }
+            }
+            
+            // Ensure we have at least one choice
+            if (choices.length === 0) {
+                choices.push("Continue the adventure");
+            }
+            
+            // Process story effects for HP, coins, or items in square brackets
+            const effectPatterns = {
+                hpDamage: /\[HP-(\d+)\]/g,
+                hpHeal: /\[HP\+(\d+)\]/g,
+                coins: /\[Coins\+(\d+)\]/g,
+                item: /\[Item:(.*?)\]/g
+            };
+            
+            // Current player
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            // Process HP damage
+            let damageMatch;
+            while ((damageMatch = effectPatterns.hpDamage.exec(storyPart)) !== null) {
+                const damage = parseInt(damageMatch[1]);
+                currentPlayer.hp = Math.max(0, currentPlayer.hp - damage);
+                showPopup(`-${damage} HP`, 'damage');
+                
+                // Check if player passed out
+                if (currentPlayer.hp <= 0 && !currentPlayer.passedOut) {
+                    currentPlayer.passedOut = true;
+                    currentPlayer.passedOutTurns = 0;
+                    storyPart += `\n\n⚠️ ${currentPlayer.name} has passed out! They will wake up after 3 turns or if another player helps them.`;
+                }
+            }
+            
+            // Process HP healing
+            let healMatch;
+            while ((healMatch = effectPatterns.hpHeal.exec(storyPart)) !== null) {
+                const heal = parseInt(healMatch[1]);
+                currentPlayer.hp = Math.min(100, currentPlayer.hp + heal);
+                showPopup(`+${heal} HP`, 'healing');
+            }
+            
+            // Process coins
+            let coinsMatch;
+            while ((coinsMatch = effectPatterns.coins.exec(storyPart)) !== null) {
+                const coins = parseInt(coinsMatch[1]);
+                currentPlayer.coins += coins;
+                showPopup(`+${coins} Coins`, 'coins');
+            }
+            
+            // Process items
+            let itemMatch;
+            while ((itemMatch = effectPatterns.item.exec(storyPart)) !== null) {
+                const item = itemMatch[1].trim();
+                currentPlayer.inventory.push({
+                    name: item,
+                    effect: "Found during adventure",
+                    type: "quest"
+                });
+                showPopup(`Item Found: ${item}`, 'item');
+            }
+            
+            // Remove the effect tags from story
+            storyPart = storyPart
+                .replace(/\[HP-\d+\]/g, '')
+                .replace(/\[HP\+\d+\]/g, '')
+                .replace(/\[Coins\+\d+\]/g, '')
+                .replace(/\[Item:.*?\]/g, '')
+                .trim();
+            
+            // Update UI
+            elements.storyText.textContent = storyPart;
+            updatePlayerStats();
+            
+            // Create choice buttons
+            elements.choicesContainer.innerHTML = '';
+            
+            // If player is passed out, show passed out message instead of choices
+            if (currentPlayer.passedOut) {
+                elements.choicesContainer.innerHTML = `
+                    <div style="margin: 1rem 0; padding: 1rem; background-color: rgba(244, 67, 54, 0.1); border-radius: var(--border-radius); border: 1px solid #f44336;">
+                        <p>${currentPlayer.name} is passed out! They will wake up after ${3 - currentPlayer.passedOutTurns} more turns or if another player helps them.</p>
+                    </div>
+                    <button class="choice-btn" onclick="nextTurn()">
+                        Next Player's Turn
+                    </button>
+                `;
+                return;
+            }
+            
+            // If goal is completed and custom actions are allowed, show the custom action input
+            if (gameState.goalCompleted && gameState.allowCustomActions) {
+                elements.customActionContainer.classList.remove('hidden');
+            } else {
+                elements.customActionContainer.classList.add('hidden');
+            }
+            
+            // Shuffle the choice types
+            const shuffledChoiceTypes = [...gameState.choiceTypes].sort(() => Math.random() - 0.5);
+            
+            // Create buttons for available choices
+            choices.forEach((choice, index) => {
+                if (index < 5) { // Limit to 5 choices
+                    const choiceType = shuffledChoiceTypes[index % shuffledChoiceTypes.length];
+                    
+                    const button = document.createElement('button');
+                    button.className = 'choice-btn';
+                    button.textContent = choice;
+                    
+                    // Add a subtle hint of the choice type in the button style
+                    button.style.borderLeft = `4px solid var(--${choiceType}-color)`;
+                    
+                    button.addEventListener('click', () => {
+                        handleChoice(choice, choiceType);
+                    });
+                    
+                    elements.choicesContainer.appendChild(button);
+                }
+            });
+        }
+
+        // Handle Player Choice
+        function handleChoice(choice, type) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            // Process choice based on type
+            let message = `${currentPlayer.name} chooses: ${choice}`;
+            
+            // Type-specific effects
+            switch (type) {
+                case 'good':
+                    // Good choices always reward with coins
+                    currentPlayer.coins += 10 + Math.floor(Math.random() * 10);
+                    showPopup(`+${10 + Math.floor(Math.random() * 10)} Coins`, 'coins');
+                    break;
+                    
+                case 'bad':
+                    // Bad choices often cause damage
+                    if (Math.random() < 0.8) {
+                        const damage = 5 + Math.floor(Math.random() * 15);
+                        currentPlayer.hp = Math.max(0, currentPlayer.hp - damage);
+                        showPopup(`-${damage} HP`, 'damage');
+                        
+                        // Check if player passed out
+                        if (currentPlayer.hp <= 0 && !currentPlayer.passedOut) {
+                            currentPlayer.passedOut = true;
+                            currentPlayer.passedOutTurns = 0;
+                        }
+                    }
+                    break;
+                    
+                case 'risky':
+                    // Risky choices have a chance for high reward or high damage
+                    if (Math.random() < 0.5) {
+                        const reward = 15 + Math.floor(Math.random() * 25);
+                        currentPlayer.coins += reward;
+                        showPopup(`+${reward} Coins`, 'coins');
+                    } else {
+                        const damage = 10 + Math.floor(Math.random() * 20);
+                        currentPlayer.hp = Math.max(0, currentPlayer.hp - damage);
+                        showPopup(`-${damage} HP`, 'damage');
+                        
+                        // Check if player passed out
+                        if (currentPlayer.hp <= 0 && !currentPlayer.passedOut) {
+                            currentPlayer.passedOut = true;
+                            currentPlayer.passedOutTurns = 0;
+                        }
+                    }
+                    break;
+                    
+                case 'search':
+                    // Search choices have a chance to find items
+                    if (Math.random() < 0.4) {
+                        const items = [
+                            "Health Potion", "Small Key", "Mysterious Note", 
+                            "Glowing Crystal", "Ancient Coin", "Strange Device"
+                        ];
+                        const itemFound = items[Math.floor(Math.random() * items.length)];
+                        currentPlayer.inventory.push({
+                            name: itemFound,
+                            effect: "Found during adventure",
+                            type: "quest"
+                        });
+                        showPopup(`Item Found: ${itemFound}`, 'item');
+                    }
+                    break;
+                    
+                case 'silly':
+                    // Silly choices have unexpected outcomes
+                    const outcomes = [
+                        { effect: 'healing', amount: 10 + Math.floor(Math.random() * 15) },
+                        { effect: 'damage', amount: 5 + Math.floor(Math.random() * 10) },
+                        { effect: 'coins', amount: 5 + Math.floor(Math.random() * 15) }
+                    ];
+                    
+                    const outcome = outcomes[Math.floor(Math.random() * outcomes.length)];
+                    
+                    if (outcome.effect === 'healing') {
+                        currentPlayer.hp = Math.min(100, currentPlayer.hp + outcome.amount);
+                        showPopup(`+${outcome.amount} HP`, 'healing');
+                    } else if (outcome.effect === 'damage') {
+                        currentPlayer.hp = Math.max(0, currentPlayer.hp - outcome.amount);
+                        showPopup(`-${outcome.amount} HP`, 'damage');
+                        
+                        // Check if player passed out
+                        if (currentPlayer.hp <= 0 && !currentPlayer.passedOut) {
+                            currentPlayer.passedOut = true;
+                            currentPlayer.passedOutTurns = 0;
+                        }
+                    } else if (outcome.effect === 'coins') {
+                        currentPlayer.coins += outcome.amount;
+                        showPopup(`+${outcome.amount} Coins`, 'coins');
+                    }
+                    break;
+            }
+            
+            updatePlayerStats();
+            
+            // Generate next story part
+            generateStory(message);
+            
+            // Advance turn
+            nextTurn();
+        }
+
+        // Handle Custom Action
+        function handleCustomAction() {
+            const action = elements.customActionInput.value;
+            
+            if (action.trim() === '') {
+                showPopup('Please enter an action', 'damage');
+                return;
+            }
+            
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            const message = `${currentPlayer.name} does: ${action}`;
+            
+            // Clear input
+            elements.customActionInput.value = '';
+            
+            // Generate next story part
+            generateStory(message);
+            
+            // Advance turn
+            nextTurn();
+        }
+
+        // Next Turn
+        function nextTurn() {
+            // Reduce cooldowns on special moves for all players
+            gameState.players.forEach(player => {
+                player.specialMoves.forEach(move => {
+                    if (move.currentCooldown > 0) {
+                        move.currentCooldown--;
+                    }
+                });
+                
+                // If player is passed out, increment passed out turns
+                if (player.passedOut) {
+                    player.passedOutTurns++;
+                    
+                    // Wake up after 3 turns
+                    if (player.passedOutTurns >= 3) {
+                        player.passedOut = false;
+                        player.hp = 20;
+                        showPopup(`${player.name} woke up!`, 'healing');
+                    }
+                }
+            });
+            
+            // Move to next player
+            gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.playerCount;
+            
+            // If we've gone through all players, increment turn counter
+            if (gameState.currentPlayerIndex === 0) {
+                gameState.turn++;
+                elements.turnCounter.textContent = gameState.turn;
+            }
+            
+            // Update player stats
+            updatePlayerStats();
+        }
+
+        // Check Goal Completion
+        function checkGoalCompletion(content) {
+            // Check if goal is mentioned as completed
+            const goalCompletionPhrases = [
+                'goal completed', 'objective completed', 'mission accomplished',
+                'succeeded in your quest', 'you have succeeded', 'quest completed',
+                'you\'ve achieved your goal', 'you have achieved your goal',
+                'completed your mission', 'completed the mission',
+                'achieved the objective', 'found the treasure',
+                'goal has been achieved', 'objective has been met',
+                'completed your quest', 'reached your goal'
+            ];
+            
+            const contentLower = content.toLowerCase();
+            
+            if (goalCompletionPhrases.some(phrase => contentLower.includes(phrase))) {
+                if (!gameState.goalCompleted) {
+                    gameState.goalCompleted = true;
+                    handleGoalCompletion();
+                }
+            }
+        }
+
+        // Handle Goal Completion
+        function handleGoalCompletion() {
+            // Reward all players
+            gameState.players.forEach(player => {
+                // Award legendary weapon
+                player.inventory.push({
+                    name: "Legendary Weapon",
+                    effect: "A powerful weapon for completing the quest",
+                    type: "legendary"
+                });
+                
+                // Award coins
+                player.coins += 1000;
+                
+                // Enable custom actions
+                gameState.allowCustomActions = true;
+            });
+            
+            // Show celebration popup
+            showPopup('🎉 Goal Complete! All players rewarded!', 'item');
+            
+            // Update stats
+            updatePlayerStats();
+            
+            // Show custom action input
+            elements.customActionContainer.classList.remove('hidden');
+        }
+
+        // Handle Healing
+        function handleHeal() {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            // Find healing items in inventory
+            const healingItems = currentPlayer.inventory.filter(item => item.type === 'healing');
+            
+            if (healingItems.length === 0) {
+                showPopup('No healing items available', 'damage');
+                return;
+            }
+            
+            // Create healing popup
+            const healingPopup = document.createElement('div');
+            healingPopup.className = 'card';
+            healingPopup.style.position = 'fixed';
+            healingPopup.style.top = '50%';
+            healingPopup.style.left = '50%';
+            healingPopup.style.transform = 'translate(-50%, -50%)';
+            healingPopup.style.zIndex = '1001';
+            healingPopup.style.maxWidth = '90%';
+            healingPopup.style.width = '400px';
+            
+            healingPopup.innerHTML = `
+                <h3>Use Healing Item</h3>
+                <div id="healingItems"></div>
+                <div class="button-container">
+                    <button id="closeHealingPopup">Close</button>
+                </div>
+            `;
+            
+            document.body.appendChild(healingPopup);
+            
+            // Populate healing items
+            const healingItemsContainer = document.getElementById('healingItems');
+            
+            healingItems.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'item-card';
+                itemElement.innerHTML = `
+                    <h4>${item.name}</h4>
+                    <p>${item.effect}</p>
+                `;
+                
+                itemElement.addEventListener('click', () => {
+                    // Use healing item
+                    const healAmount = parseInt(item.effect.match(/\d+/)[0]) || 20;
+                    currentPlayer.hp = Math.min(100, currentPlayer.hp + healAmount);
+                    
+                    // Remove item from inventory
+                    currentPlayer.inventory = currentPlayer.inventory.filter(i => i !== item);
+                    
+                    // Show popup
+                    showPopup(`+${healAmount} HP`, 'healing');
+                    
+                    // Update stats
+                    updatePlayerStats();
+                    
+                    // Close popup
+                    document.body.removeChild(healingPopup);
+                });
+                
+                healingItemsContainer.appendChild(itemElement);
+            });
+            
+            // Add event listener to close button
+            document.getElementById('closeHealingPopup').addEventListener('click', () => {
+                document.body.removeChild(healingPopup);
+            });
+        }
+
+        // Update Inventory Screen
+        function updateInventoryScreen() {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            elements.inventory.innerHTML = '';
+            
+            if (currentPlayer.inventory.length === 0) {
+                elements.inventory.innerHTML = '<p>No items in inventory</p>';
+                return;
+            }
+            
+            currentPlayer.inventory.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'item-card';
+                
+                // Add special styling for legendary items
+                if (item.type === 'legendary') {
+                    itemElement.style.background = 'linear-gradient(135deg, #4a3505, #ffd700)';
+                    itemElement.style.color = '#fff';
+                    itemElement.style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
+                }
+                
+                itemElement.innerHTML = `
+                    <h4>${item.name}</h4>
+                    <p>${item.effect}</p>
+                `;
+                
+                // Add use button for usable items
+                if (item.type === 'healing' || item.type === 'equipment' || item.type === 'quest') {
+                    const useButton = document.createElement('button');
+                    useButton.textContent = 'Use';
+                    useButton.style.marginTop = '10px';
+                    useButton.style.width = '100%';
+                    
+                    useButton.addEventListener('click', () => {
+                        useItem(item);
+                    });
+                    
+                    itemElement.appendChild(useButton);
+                }
+                
+                elements.inventory.appendChild(itemElement);
+            });
+        }
+
+        // Use Item
+        function useItem(item) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            // Handle based on item type
+            if (item.type === 'healing') {
+                // Extract healing amount from effect text
+                const healAmount = parseInt(item.effect.match(/\d+/)[0]) || 20;
+                currentPlayer.hp = Math.min(100, currentPlayer.hp + healAmount);
+                showPopup(`+${healAmount} HP`, 'healing');
+                
+                // Remove item from inventory
+                currentPlayer.inventory = currentPlayer.inventory.filter(i => i !== item);
+            } else if (item.type === 'equipment' || item.type === 'quest') {
+                // Generate story based on item use
+                generateStory(`${currentPlayer.name} uses ${item.name}`);
+                
+                // Remove item from inventory if it's consumable
+                if (item.type !== 'legendary') {
+                    currentPlayer.inventory = currentPlayer.inventory.filter(i => i !== item);
+                }
+                
+                // Return to game screen
+                showScreen('gameScreen');
+            }
+            
+            // Update stats and inventory
+            updatePlayerStats();
+            updateInventoryScreen();
+        }
+
+        // Update Shop Screen
+        function updateShopScreen() {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            elements.shop.innerHTML = '';
+            elements.shopCoins.textContent = currentPlayer.coins;
+            
+            // Get shop items based on adventure type
+            let shopItems;
+            if (gameState.adventureType !== 'custom') {
+                shopItems = adventureData[gameState.adventureType].shopItems;
+            } else {
+                shopItems = adventureData.custom.shopItems;
+            }
+            
+            // Add healing potion to all shops
+            if (!shopItems.some(item => item.name === "Health Potion")) {
+                shopItems.push({
+                    name: "Health Potion",
+                    effect: "Restore 25 HP",
+                    cost: 20,
+                    type: "healing"
+                });
+            }
+            
+            shopItems.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'item-card';
+                itemElement.innerHTML = `
+                    <h4>${item.name}</h4>
+                    <p>${item.effect}</p>
+                    <p>Cost: ${item.cost} Coins</p>
+                `;
+                
+                const buyButton = document.createElement('button');
+                buyButton.textContent = 'Buy';
+                buyButton.style.marginTop = '10px';
+                buyButton.style.width = '100%';
+                
+                // Disable button if not enough coins
+                if (currentPlayer.coins < item.cost) {
+                    buyButton.disabled = true;
+                }
+                
+                buyButton.addEventListener('click', () => {
+                    buyItem(item);
+                });
+                
+                itemElement.appendChild(buyButton);
+                elements.shop.appendChild(itemElement);
+            });
+        }
+
+        // Buy Item
+        function buyItem(item) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            // Check if player has enough coins
+            if (currentPlayer.coins < item.cost) {
+                showPopup('Not enough coins', 'damage');
+                return;
+            }
+            
+            // Deduct coins
+            currentPlayer.coins -= item.cost;
+            
+            // Add item to inventory
+            currentPlayer.inventory.push({
+                name: item.name,
+                effect: item.effect,
+                type: item.type
+            });
+            
+            // Show popup
+            showPopup(`Bought ${item.name}`, 'item');
+            
+            // Update UI
+            updatePlayerStats();
+            updateShopScreen();
+        }
+
+        // Update Special Moves Screen
+        function updateSpecialMovesScreen() {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            elements.specialMoves.innerHTML = '';
+            
+            if (currentPlayer.specialMoves.length === 0) {
+                elements.specialMoves.innerHTML = '<p>No special moves available</p>';
+                return;
+            }
+            
+            currentPlayer.specialMoves.forEach(move => {
+                const moveElement = document.createElement('div');
+                moveElement.className = 'item-card';
+                moveElement.innerHTML = `
+                    <h4>${move.name}</h4>
+                    <p>${move.effect}</p>
+                    <span class="move-cooldown">Cooldown: ${move.cooldown} turns</span>
+                `;
+                
+                const useButton = document.createElement('button');
+                useButton.textContent = 'Use';
+                useButton.style.marginTop = '10px';
+                useButton.style.width = '100%';
+                
+                // Disable button if on cooldown
+                if (move.currentCooldown > 0) {
+                    useButton.disabled = true;
+                    moveElement.appendChild(document.createTextNode(`Cooling down: ${move.currentCooldown} turns left`));
+                }
+                
+                useButton.addEventListener('click', () => {
+                    useSpecialMove(move);
+                });
+                
+                moveElement.appendChild(useButton);
+                elements.specialMoves.appendChild(moveElement);
+            });
+        }
+
+        // Use Special Move
+        function useSpecialMove(move) {
+            // Set cooldown
+            move.currentCooldown = move.cooldown;
+            
+            // Generate story based on special move
+            generateStory(`${gameState.players[gameState.currentPlayerIndex].name} uses ${move.name} special ability`);
+            
+            // Show popup
+            showPopup(`Used ${move.name}`, 'skill');
+            
+            // Return to game screen
+            showScreen('gameScreen');
+            
+            // This uses a turn
+            nextTurn();
+        }
+
+        // Update Player Stats
+        function updatePlayerStats() {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            elements.currentPlayerName.textContent = `${currentPlayer.name}'s Turn`;
+            elements.playerHp.textContent = currentPlayer.hp;
+            elements.playerCoins.textContent = currentPlayer.coins;
+            elements.playerGoal.textContent = gameState.goal;
+            
+            // Update HP bar color based on health
+            if (currentPlayer.hp < 30) {
+                elements.playerHp.style.color = '#f44336';
+            } else if (currentPlayer.hp < 60) {
+                elements.playerHp.style.color = '#ff9800';
+            } else {
+                elements.playerHp.style.color = '#4caf50';
+            }
+        }
+
+        // Show Popup Message
+        function showPopup(message, type) {
+            elements.popupMessage.textContent = message;
+            elements.popupMessage.className = 'popup'; // Reset classes
+            elements.popupMessage.classList.add(type);
+            elements.popupMessage.style.opacity = '1';
+            
+            // Hide after 3 seconds
+            setTimeout(() => {
+                elements.popupMessage.style.opacity = '0';
+            }, 3000);
+        }
+
+        // Show/Hide Loading Indicator
+        function showLoading(show) {
+            if (show) {
+                elements.loading.classList.remove('hidden');
+                gameState.isLoading = true;
+            } else {
+                elements.loading.classList.add('hidden');
+                gameState.isLoading = false;
+            }
+        }
+
+        // Save Game
+        function saveGame() {
+            const gameData = {
+                playerCount: gameState.playerCount,
+                players: gameState.players,
+                currentPlayerIndex: gameState.currentPlayerIndex,
+                adventureType: gameState.adventureType,
+                customTheme: gameState.customTheme,
+                turn: gameState.turn,
+                goal: gameState.goal,
+                goalCompleted: gameState.goalCompleted,
+                messageHistory: gameState.messageHistory,
+                allowCustomActions: gameState.allowCustomActions,
+                apiKey: gameState.apiKey // Include API key in saved games
+            };
+            
+            // Create a save code based on date/time
+            const now = new Date();
+            const saveCode = `AG-${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}-${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            // Save to localStorage
+            try {
+                localStorage.setItem(saveCode, JSON.stringify(gameData));
+                return saveCode;
+            } catch (error) {
+                console.error('Failed to save game:', error);
+                return null;
+            }
+        }
+
+        // Load Game
+        function loadGame(saveCode) {
+            try {
+                const savedData = localStorage.getItem(saveCode);
+                
+                if (!savedData) {
+                    throw new Error('Save data not found');
+                }
+                
+                const gameData = JSON.parse(savedData);
+                
+                // Update game state
+                gameState.playerCount = gameData.playerCount;
+                gameState.players = gameData.players;
+                gameState.currentPlayerIndex = gameData.currentPlayerIndex;
+                gameState.adventureType = gameData.adventureType;
+                gameState.customTheme = gameData.customTheme;
+                gameState.turn = gameData.turn;
+                gameState.goal = gameData.goal;
+                gameState.goalCompleted = gameData.goalCompleted;
+                gameState.messageHistory = gameData.messageHistory;
+                gameState.allowCustomActions = gameData.allowCustomActions || false;
+                
+                // Load API key if present in save data
+                if (gameData.apiKey) {
+                    gameState.apiKey = gameData.apiKey;
+                    localStorage.setItem('adventureStories_apiKey', gameData.apiKey);
+                }
+                
+                // Update UI
+                updatePlayerStats();
+                elements.playerGoal.textContent = gameState.goal;
+                elements.turnCounter.textContent = gameState.turn;
+                
+                // Show custom action input if goal completed
+                if (gameState.goalCompleted && gameState.allowCustomActions) {
+                    elements.customActionContainer.classList.remove('hidden');
+                } else {
+                    elements.customActionContainer.classList.add('hidden');
+                }
+                
+                // Get last AI response for story and choices
+                const lastAIResponse = gameState.messageHistory.filter(msg => msg.role === 'assistant').pop();
+                
+                if (lastAIResponse) {
+                    processAIResponse(lastAIResponse.content);
+                } else {
+                    elements.storyText.textContent = 'Continue your adventure!';
+                    elements.choicesContainer.innerHTML = `
+                        <button class="choice-btn" onclick="generateStory('continue the adventure')">
+                            Continue
+                        </button>
+                    `;
+                }
+                
+                // Show game screen
+                showScreen('gameScreen');
+                
+                return true;
+            } catch (error) {
+                console.error('Failed to load game:', error);
+                showPopup('Failed to load game', 'damage');
+                return false;
+            }
+        }
+
+        // Load Game List
+        function loadGameList() {
+            elements.savedGames.innerHTML = '';
+            let hasSaves = false;
+            
+            // Get all save codes from localStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                
+                if (key.startsWith('AG-')) {
+                    hasSaves = true;
+                    
+                    try {
+                        // Parse save data
+                        const saveData = JSON.parse(localStorage.getItem(key));
+                        const adventureName = saveData.adventureType === 'custom' ? saveData.customTheme : adventureData[saveData.adventureType].name;
+                        
+                        // Create save item
+                        const saveItem = document.createElement('div');
+                        saveItem.className = 'item-card';
+                        saveItem.innerHTML = `
+                            <h4>${adventureName}</h4>
+                            <p>Turn: ${saveData.turn}</p>
+                            <p>Players: ${saveData.playerCount}</p>
+                            <p>Date: ${key.substring(3, 7)}-${key.substring(7, 9)}-${key.substring(9, 11)}</p>
+                            <p>Time: ${key.substring(12, 14)}:${key.substring(14, 16)}</p>
+                        `;
+                        
+                        const loadButton = document.createElement('button');
+                        loadButton.textContent = 'Load';
+                        loadButton.style.marginTop = '10px';
+                        loadButton.style.width = '100%';
+                        
+                        loadButton.addEventListener('click', () => {
+                            loadGame(key);
+                        });
+                        
+                        saveItem.appendChild(loadButton);
+                        elements.savedGames.appendChild(saveItem);
+                    } catch (error) {
+                        console.error('Error parsing save:', error);
+                    }
+                }
+            }
+            
+            if (!hasSaves) {
+                elements.savedGames.innerHTML = '<p>No saved games found</p>';
+            }
+            
+            showScreen('loadGameScreen');
+        }
+
+        // Save and Exit
+        function saveAndExit() {
+            const saveCode = saveGame();
+            
+            if (saveCode) {
+                showPopup('Game saved successfully', 'healing');
+                setTimeout(() => {
+                    showScreen('mainMenu');
+                }, 1500);
+            } else {
+                showPopup('Failed to save game', 'damage');
+            }
+        }
+
+        // Confirm New Adventure
+        function confirmNewAdventure() {
+            // Create confirmation popup
+            const confirmPopup = document.createElement('div');
+            confirmPopup.className = 'card';
+            confirmPopup.style.position = 'fixed';
+            confirmPopup.style.top = '50%';
+            confirmPopup.style.left = '50%';
+            confirmPopup.style.transform = 'translate(-50%, -50%)';
+            confirmPopup.style.zIndex = '1001';
+            confirmPopup.style.maxWidth = '90%';
+            confirmPopup.style.width = '400px';
+            
+            confirmPopup.innerHTML = `
+                <h3>Start New Adventure?</h3>
+                <p>You will lose any unsaved progress. Do you want to save your current game first?</p>
+                <div class="button-container">
+                    <button id="saveAndNewBtn">Save & New</button>
+                    <button id="newWithoutSaveBtn">New Without Saving</button>
+                    <button id="cancelNewBtn">Cancel</button>
+                </div>
+            `;
+            
+            document.body.appendChild(confirmPopup);
+            
+            // Add event listeners
+            document.getElementById('saveAndNewBtn').addEventListener('click', () => {
+                saveGame();
+                document.body.removeChild(confirmPopup);
+                showScreen('playerCountScreen');
+            });
+            
+            document.getElementById('newWithoutSaveBtn').addEventListener('click', () => {
+                document.body.removeChild(confirmPopup);
+                showScreen('playerCountScreen');
+            });
+            
+            document.getElementById('cancelNewBtn').addEventListener('click', () => {
+                document.body.removeChild(confirmPopup);
+            });
+        }
+
+        // Initialize game when page loads
+        window.onload = initGame;
+    </script>
+</body>
+</html>
